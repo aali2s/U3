@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.sun.tools.javac.util.StringUtils;
 
 /**
  * Servlet implementation class DemoServlet
@@ -26,6 +25,9 @@ public class DemoServlet extends HttpServlet {
 	private static int totalCars = 0;
 	private static int totalStay = 0;
 	private static float totalAmount = 0;
+	
+	private static int longestStay = 0;
+	private static int shortestStay = 0;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -44,13 +46,19 @@ public class DemoServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-
+		
 		if (request.getQueryString() == null || request.getQueryString().isEmpty()
 				|| request.getQueryString().isBlank())
 			return;
+		
+		
 		String[] requestParamString = request.getQueryString().split("=");
+		
+		
 		String command = requestParamString[0];
 		String param = requestParamString[1];
+		
+		
 		response.setContentType("text/html");
 		if ("fun".equals(command) && "sum".equals(param)) {
 			Float sum = getPersistentSum();
@@ -60,9 +68,16 @@ public class DemoServlet extends HttpServlet {
 			response.getWriter().append(sum.toString());
 			System.out.println("sum = " + sum);
 		} else if (("fun".equals(command) && "average".equalsIgnoreCase(param))) {
+			
 			response.getWriter().append(" Fee:" + totalAmount / totalCars)
 					.append("  Duration:" + totalStay / totalCars);
-		} else {
+		} else if(("fun".equals(command) && "stay".equalsIgnoreCase(param))) {
+			
+			
+			response.getWriter().append(" Shortest Stay:  " + shortestStay).append(" Longest Stay:  " + longestStay);
+		}
+		else
+		{
 			System.out.println("Invalid Command: " + request.getQueryString());
 		}
 
@@ -123,6 +138,7 @@ public class DemoServlet extends HttpServlet {
 		String event = params[0];
 
 		String priceString = params[5];
+		
 		if (!"_".equals(priceString)) {
 			// strip € in front, parse the number behind
 			float price = Float.parseFloat(priceString.split(" ")[2]);
@@ -133,15 +149,28 @@ public class DemoServlet extends HttpServlet {
 				totalCars++;
 				totalAmount = totalAmount + price;
 				totalStay = totalStay + Integer.parseInt(params[4]);
+				
+			
+				
+				if(totalStay>Integer.parseInt(params[4])) {
+					longestStay = Integer.parseInt(params[4]);
+				}else if(totalStay<=Integer.parseInt(params[4])) {
+					shortestStay = Integer.parseInt(params[4]);
+				}
 
 			}
 			getApplication().setAttribute("avgAmount", totalAmount / totalCars);
 			getApplication().setAttribute("avgStay", totalStay / totalCars);
+			getApplication().setAttribute("longestStay", longestStay);
+			getApplication().setAttribute("shortestStay", shortestStay);
+			
 
 		}
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 		out.println(sum);
 	}
+	
+	
 
 }
